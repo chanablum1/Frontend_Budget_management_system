@@ -36,7 +36,7 @@
             const password = document.getElementById('password').value;
 
             try {
-                const response = await axios.post('http://127.0.0.1:8000/login/', { username, password });
+                const response = await axios.post('https://budget-management-system-1fqb.onrender.com/login/', { username, password });
 
                 console.log(response.data);  // הדפסת כל מה שהשרת מחזיר
 
@@ -48,7 +48,7 @@
                 localStorage.setItem('refreshToken', refreshToken);
                 // localStorage.setItem('username', response.data.username);
 
-                const userInfoResponse = await axios.get(`http://127.0.0.1:8000/transaction/user/`, {
+                const userInfoResponse = await axios.get(`https://budget-management-system-1fqb.onrender.com/transaction/user/`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`  // Pass the token in the header
                     }

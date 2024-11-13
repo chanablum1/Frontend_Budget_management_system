@@ -36,7 +36,7 @@
             const firstName = document.getElementById('newFirstName').value;
 
             try {
-                const response = await axios.post('http://127.0.0.1:8000/transaction/register/', { username, password, first_name: firstName });
+                const response = await axios.post('https://budget-management-system-1fqb.onrender.com/transaction/register/', { username, password, first_name: firstName });
 
                 document.getElementById('signup-message').innerHTML = '<p class="text-success">Account created successfully!</p>';
                 // Redirect to login page after successful registration

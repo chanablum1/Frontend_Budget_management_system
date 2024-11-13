@@ -105,7 +105,7 @@
             }
 
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/transaction/transactions/monthly-summary/?month=${month}`, {
+                const response = await axios.get(`https://budget-management-system-1fqb.onrender.com/transaction/transactions/monthly-summary/?month=${month}`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`  // שליחת הטוקן בהגדרת כותרת
                     }

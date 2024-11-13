@@ -119,7 +119,7 @@
         // טוען את הכנסות המשתמש
         async function loadIncomes() {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/transaction/transactions/?type=income', {
+                const response = await axios.get('https://budget-management-system-1fqb.onrender.com/transaction/transactions/?type=income', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}` // שליחת הטוקן בהגדרת כותרת
                     }
@@ -151,7 +151,7 @@
             currentIncomeId = id; // שומר את ה-ID של העיסקה שנבחרה לעריכה
 
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/transaction/transactions/${id}/`, {
+                const response = await axios.get(`https://budget-management-system-1fqb.onrender.com/transaction/transactions/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
@@ -191,7 +191,7 @@
             if (currentIncomeId) {
                 // במקרה של עדכון, שולחים את הנתונים ל-URL של העיסקה המתאימה
                 try {
-                    const response = await axios.put(`http://127.0.0.1:8000/transaction/transactions/${currentIncomeId}/`, {
+                    const response = await axios.put(`https://budget-management-system-1fqb.onrender.com/transaction/transactions/${currentIncomeId}/`, {
                         date: date,
                         amount: amount,
                         category: category,  // שלח את ה-ID של הקטגוריה
@@ -215,7 +215,7 @@
             } else {
                 // במקרה של הוספה חדשה
                 try {
-                    const response = await axios.post('http://127.0.0.1:8000/transaction/transactions/', {
+                    const response = await axios.post('https://budget-management-system-1fqb.onrender.com/transaction/transactions/', {
                         date: date,
                         amount: amount,
                         category: category,
@@ -244,7 +244,7 @@
         // פונקציה למחוק הכנסה
         async function deleteIncome(id) {
             try {
-                await axios.delete(`http://127.0.0.1:8000/transaction/transactions/${id}/`, {
+                await axios.delete(`https://budget-management-system-1fqb.onrender.com/transaction/transactions/${id}/`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
                     }
@@ -258,7 +258,7 @@
         // טוען את הקטגוריות
         async function loadCategories() {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/transaction/categories/?type=income', {
+                const response = await axios.get('https://budget-management-system-1fqb.onrender.com/transaction/categories/?type=income', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
                     }
