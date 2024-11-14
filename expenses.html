@@ -6,8 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <title>ניהול הוצאות</title>
+
+    <style>
+        th {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .sort-arrow {
+            position: absolute;
+            right: 100%; /* מיקום החץ אחרי המילה תאריך */
+            top: 50%;
+            transform: translateY(-50%) translateX(5px); /* מעביר את החץ קצת ימינה כדי שיהיה צמוד */
+            cursor: pointer;
+        }
+
+        .sort-arrow svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .sorted-asc svg {
+            transform: rotate(180deg);
+        }
+
+        .sorted-desc svg {
+            transform: rotate(0deg);
+        }
+    </style>
 </head>
 <body>
+
     <div class="container">
         <h1 class="mt-4">ניהול הוצאות</h1>
 
@@ -27,9 +56,39 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>תאריך</th>
-                    <th>סכום</th>
-                    <th>קטגוריה</th>
+                    <th>
+                        תאריך
+                        <span class="sort-arrow" onclick="sortTable('date')">
+                            <!-- חץ מעלה ומטה -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-arrow-up-down" viewBox="0 0 16 16">
+                                <path d="M8 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-1 0V3.5A.5.5 0 0 1 8 3z"/>
+                                <path d="M3.5 7a.5.5 0 0 1 .5.5H7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5V7z"/>
+                                <path d="M11.5 9a.5.5 0 0 1 .5-.5H9a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5V9z"/>
+                            </svg>
+                        </span>
+                    </th>
+                    <th>
+                        סכום
+                        <span class="sort-arrow" onclick="sortTable('amount')">
+                            <!-- חץ מעלה ומטה -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-arrow-up-down" viewBox="0 0 16 16">
+                                <path d="M8 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-1 0V3.5A.5.5 0 0 1 8 3z"/>
+                                <path d="M3.5 7a.5.5 0 0 1 .5.5H7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5V7z"/>
+                                <path d="M11.5 9a.5.5 0 0 1 .5-.5H9a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5V9z"/>
+                            </svg>
+                        </span>
+                    </th>
+                    <th>
+                        קטגוריה
+                        <span class="sort-arrow" onclick="sortTable('category')">
+                            <!-- חץ מעלה ומטה -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-arrow-up-down" viewBox="0 0 16 16">
+                                <path d="M8 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-1 0V3.5A.5.5 0 0 1 8 3z"/>
+                                <path d="M3.5 7a.5.5 0 0 1 .5.5H7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5V7z"/>
+                                <path d="M11.5 9a.5.5 0 0 1 .5-.5H9a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5V9z"/>
+                            </svg>
+                        </span>
+                    </th>
                     <th>תיאור</th>
                     <th>פעולות</th>
                 </tr>
@@ -92,7 +151,12 @@
     <script>
 
         let currentExpenseId = null; // משתנה גלובלי לאחסון ה-ID של העיסקה הנבחרת
-
+        let expenseData = []; // משתנה לשמירת נתוני ההוצאות
+        let sortDirection = {
+            date: 'asc',
+            amount: 'asc',
+            category: 'asc'
+        };
 
         // פונקציה לעדכון שם המשתמש והצגת כפתור Logout אם המשתמש מחובר
         function checkLoginStatus() {
@@ -103,14 +167,12 @@
                 document.getElementById('username-display').textContent = `Hello, ${username}`;
                 document.getElementById('logout-btn').style.display = 'inline-block';
             } else {
-                // אם המשתמש לא מחובר, הפנה לדף הלוגין
-                window.location.href = 'login.html';
+                window.location.href = 'login.html'; // הפנייה לעמוד הלוגין
             }
         }
 
         // פונקציה לביצוע Logout
         function logout() {
-            // מסיר את הטוקן מ-localStorage ומפנה לדף הלוגין
             localStorage.removeItem('authToken');
             localStorage.removeItem('username');
             window.location.href = 'login.html'; // הפנייה לעמוד הלוגין
@@ -121,30 +183,72 @@
             try {
                 const response = await axios.get('https://budget-management-system-1fqb.onrender.com/transaction/transactions/?type=expense', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}` // שליחת הטוקן בהגדרת כותרת
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
-                const expenses = response.data;
-                const tableBody = document.getElementById('expenseTableBody');
-                tableBody.innerHTML = ''; // נקה את הטבלה
-
-                expenses.forEach(expense => {
-                    const row = tableBody.insertRow();
-                    row.innerHTML = `
-                        <td>${expense.date}</td>
-                        <td>${expense.amount}</td>
-                        <td>${expense.category ? expense.category.name : 'לא זוהתה קטגוריה'}</td>
-                        <td>${expense.description}</td>
-                        <td>
-                            <button class="btn btn-success" onclick="editExpense(${expense.id})">עדכן</button>
-                            <button class="btn btn-danger" onclick="deleteExpense(${expense.id})">מחק</button>
-                        </td>`;
-                });
+                expenseData = response.data;
+                loadTableData(expenseData);
             } catch (error) {
                 console.error('Error loading expenses:', error);
             }
         }
 
+        // פונקציה למיון הנתונים
+        function sortTable(criteria) {
+            const direction = sortDirection[criteria] === 'asc' ? 1 : -1;
+            let sortedData;
+
+            switch(criteria) {
+                case 'date':
+                    sortedData = [...expenseData].sort((a, b) => direction * (new Date(a.date) - new Date(b.date)));
+                    break;
+                case 'amount':
+                    sortedData = [...expenseData].sort((a, b) => direction * (a.amount - b.amount));
+                    break;
+                case 'category':
+                    sortedData = [...expenseData].sort((a, b) => direction * a.category.name.localeCompare(b.category.name));
+                    break;
+                default:
+                    sortedData = expenseData;
+            }
+
+            sortDirection[criteria] = sortDirection[criteria] === 'asc' ? 'desc' : 'asc';
+            updateArrows(criteria);
+            loadTableData(sortedData);
+        }
+
+        // עדכון החיצים לפי כיוון המיון
+        function updateArrows(criteria) {
+            const arrows = document.querySelectorAll('.sort-arrow');
+            arrows.forEach(arrow => {
+                arrow.classList.remove('sorted-asc', 'sorted-desc');
+            });
+
+            const activeArrow = document.querySelector(`th .sort-arrow[onclick="sortTable('${criteria}')"]`);
+            if (sortDirection[criteria] === 'asc') {
+                activeArrow.classList.add('sorted-asc');
+            } else {
+                activeArrow.classList.add('sorted-desc');
+            }
+        }
+
+        // פונקציה להוספת שורות לטבלה
+        function loadTableData(data) {
+            const tableBody = document.getElementById('expenseTableBody');
+            tableBody.innerHTML = ''; // נקה את הטבלה לפני הוספת נתונים חדשים
+            data.forEach(expense => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${expense.date}</td>
+                    <td>${expense.amount}</td>
+                    <td>${expense.category ? expense.category.name : 'לא זוהתה קטגוריה'}</td>
+                    <td>${expense.description}</td>
+                    <td>
+                        <button class="btn btn-success" onclick="editExpense(${expense.id})">עדכן</button>
+                        <button class="btn btn-danger" onclick="deleteExpense(${expense.id})">מחק</button>
+                    </td>`;
+            });
+        }
 
         // פונקציה להוסיף נתונים של העיסקה לטופס על מנת לעדכן אותה
         async function editExpense(id) {
@@ -182,29 +286,28 @@
             const description = document.getElementById('expenseDescription').value;
             const paymentMethod = document.getElementById('expensePaymentMethod').value;
 
-            // אם amount לא מספר או ריק, הראה שגיאה
             if (isNaN(amount) || amount <= 0) {
                 alert('הסכום חייב להיות מספר חיובי');
                 return;
             }
 
             if (currentExpenseId) {
-                // במקרה של עדכון, שולחים את הנתונים ל-URL של העיסקה המתאימה
+                // במקרה של עדכון
                 try {
                     const response = await axios.put(`https://budget-management-system-1fqb.onrender.com/transaction/transactions/${currentExpenseId}/`, {
                         date: date,
                         amount: amount,
-                        category: category,  // שלח את ה-ID של הקטגוריה
+                        category: category,
                         description: description,
                         payment_method: paymentMethod
                     }, {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }
                     });
 
                     if (response.status === 200) {
-                        loadExpenses();  // טוען את הנתונים מחדש לאחר העדכון
+                        loadExpenses();
                         document.getElementById('expenseForm').reset();
                         $('#addExpenseModal').modal('hide');
                         currentExpenseId = null;  // לאתחל את ה-ID לאחר העדכון
@@ -223,7 +326,7 @@
                         payment_method: paymentMethod,
                     }, {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }
                     });
 
@@ -246,7 +349,7 @@
             try {
                 await axios.delete(`https://budget-management-system-1fqb.onrender.com/transaction/transactions/${id}/`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
                 loadExpenses(); // טוען מחדש את העיסקאות אחרי מחיקת העיסקה
@@ -260,7 +363,7 @@
             try {
                 const response = await axios.get('https://budget-management-system-1fqb.onrender.com/transaction/categories/?type=expense', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
                 const categories = response.data;
