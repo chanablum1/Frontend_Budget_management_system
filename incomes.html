@@ -7,6 +7,34 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <title>ניהול הכנסות</title>
 
+    <style>
+        th {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .sort-arrow {
+            position: absolute;
+            right: 100%; /* מיקום החץ אחרי המילה תאריך */
+            top: 50%;
+            transform: translateY(-50%) translateX(5px); /* מעביר את החץ קצת ימינה כדי שיהיה צמוד */
+            cursor: pointer;
+        }
+
+        .sort-arrow svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .sorted-asc svg {
+            transform: rotate(180deg);
+        }
+
+        .sorted-desc svg {
+            transform: rotate(0deg);
+        }
+    </style>
+
 </head>
 
 <body>
@@ -26,8 +54,52 @@
             <button class="btn btn-primary" data-toggle="modal" data-target="#addIncomeModal">הוסף הכנסה</button>
             <a href="index.html" class="btn btn-secondary">חזרה לעמוד הבית</a>
         </div>
-        
         <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        תאריך
+                        <span class="sort-arrow" onclick="sortTable('date')">
+                            <!-- חץ מעלה ומטה -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-arrow-up-down" viewBox="0 0 16 16">
+                                <path d="M8 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-1 0V3.5A.5.5 0 0 1 8 3z"/>
+                                <path d="M3.5 7a.5.5 0 0 1 .5.5H7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5V7z"/>
+                                <path d="M11.5 9a.5.5 0 0 1 .5-.5H9a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5V9z"/>
+                            </svg>
+                        </span>
+                    </th>
+                    <th>
+                        סכום
+                        <span class="sort-arrow" onclick="sortTable('amount')">
+                            <!-- חץ מעלה ומטה -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-arrow-up-down" viewBox="0 0 16 16">
+                                <path d="M8 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-1 0V3.5A.5.5 0 0 1 8 3z"/>
+                                <path d="M3.5 7a.5.5 0 0 1 .5.5H7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5V7z"/>
+                                <path d="M11.5 9a.5.5 0 0 1 .5-.5H9a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5V9z"/>
+                            </svg>
+                        </span>
+                    </th>
+                    <th>
+                        קטגוריה
+                        <span class="sort-arrow" onclick="sortTable('category')">
+                            <!-- חץ מעלה ומטה -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-arrow-up-down" viewBox="0 0 16 16">
+                                <path d="M8 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-1 0V3.5A.5.5 0 0 1 8 3z"/>
+                                <path d="M3.5 7a.5.5 0 0 1 .5.5H7a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.5-.5V7z"/>
+                                <path d="M11.5 9a.5.5 0 0 1 .5-.5H9a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5V9z"/>
+                            </svg>
+                        </span>
+                    </th>
+                    <th>תיאור</th>
+                    <th>פעולות</th>
+                </tr>
+            </thead>
+            <tbody id="incomeTableBody">
+                <!-- הכנסות יתווספו כאן באמצעות JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- <table class="table table-striped">
             <thead>
                 <tr>
                     <th>תאריך</th>
@@ -38,9 +110,9 @@
                 </tr>
             </thead>
             <tbody id="incomeTableBody">
-                <!-- הכנסות יתווספו כאן באמצעות JavaScript -->
+                הכנסות יתווספו כאן באמצעות JavaScript
             </tbody>
-        </table>
+        </table> -->
     </div>
 
     <!-- מודל להוספת הכנסה -->
