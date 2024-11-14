@@ -34,7 +34,6 @@
             transform: rotate(0deg);
         }
     </style>
-
 </head>
 
 <body>
@@ -54,6 +53,7 @@
             <button class="btn btn-primary" data-toggle="modal" data-target="#addIncomeModal">הוסף הכנסה</button>
             <a href="index.html" class="btn btn-secondary">חזרה לעמוד הבית</a>
         </div>
+        
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -98,21 +98,6 @@
                 <!-- הכנסות יתווספו כאן באמצעות JavaScript -->
             </tbody>
         </table>
-
-        <!-- <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>תאריך</th>
-                    <th>סכום</th>
-                    <th>קטגוריה</th>
-                    <th>תיאור</th>
-                    <th>פעולות</th>
-                </tr>
-            </thead>
-            <tbody id="incomeTableBody">
-                הכנסות יתווספו כאן באמצעות JavaScript
-            </tbody>
-        </table> -->
     </div>
 
     <!-- מודל להוספת הכנסה -->
@@ -164,10 +149,15 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
-
         let currentIncomeId = null; // משתנה גלובלי לאחסון ה-ID של העיסקה הנבחרת
-
+        let incomeData = []; // משתנה לשמירת נתוני ההכנסות
+        let sortDirection = {
+            date: 'asc',
+            amount: 'asc',
+            category: 'asc'
+        };
 
         // פונקציה לעדכון שם המשתמש והצגת כפתור Logout אם המשתמש מחובר
         function checkLoginStatus() {
@@ -178,14 +168,12 @@
                 document.getElementById('username-display').textContent = `Hello, ${username}`;
                 document.getElementById('logout-btn').style.display = 'inline-block';
             } else {
-                // אם המשתמש לא מחובר, הפנה לדף הלוגין
-                window.location.href = 'login.html';
+                window.location.href = 'login.html'; // הפנייה לעמוד הלוגין
             }
         }
 
         // פונקציה לביצוע Logout
         function logout() {
-            // מסיר את הטוקן מ-localStorage ומפנה לדף הלוגין
             localStorage.removeItem('authToken');
             localStorage.removeItem('username');
             window.location.href = 'login.html'; // הפנייה לעמוד הלוגין
@@ -199,27 +187,69 @@
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}` // שליחת הטוקן בהגדרת כותרת
                     }
                 });
-                const incomes = response.data;
-                const tableBody = document.getElementById('incomeTableBody');
-                tableBody.innerHTML = ''; // נקה את הטבלה
-
-                incomes.forEach(income => {
-                    const row = tableBody.insertRow();
-                    row.innerHTML = `
-                        <td>${income.date}</td>
-                        <td>${income.amount}</td>
-                        <td>${income.category ? income.category.name : 'לא זוהתה קטגוריה'}</td>
-                        <td>${income.description}</td>
-                        <td>
-                            <button class="btn btn-success" onclick="editIncome(${income.id})">עדכן</button>
-                            <button class="btn btn-danger" onclick="deleteIncome(${income.id})">מחק</button>
-                        </td>`;
-                });
+                incomeData = response.data;
+                loadTableData(incomeData);
             } catch (error) {
                 console.error('Error loading incomes:', error);
             }
         }
 
+        // פונקציה למיון הנתונים
+        function sortTable(criteria) {
+            const direction = sortDirection[criteria] === 'asc' ? 1 : -1;
+            let sortedData;
+
+            switch(criteria) {
+                case 'date':
+                    sortedData = [...incomeData].sort((a, b) => direction * (new Date(a.date) - new Date(b.date)));
+                    break;
+                case 'amount':
+                    sortedData = [...incomeData].sort((a, b) => direction * (a.amount - b.amount));
+                    break;
+                case 'category':
+                    sortedData = [...incomeData].sort((a, b) => direction * a.category.name.localeCompare(b.category.name));
+                    break;
+                default:
+                    sortedData = incomeData;
+            }
+
+            sortDirection[criteria] = sortDirection[criteria] === 'asc' ? 'desc' : 'asc';
+            updateArrows(criteria);
+            loadTableData(sortedData);
+        }
+
+        // עדכון החיצים לפי כיוון המיון
+        function updateArrows(criteria) {
+            const arrows = document.querySelectorAll('.sort-arrow');
+            arrows.forEach(arrow => {
+                arrow.classList.remove('sorted-asc', 'sorted-desc');
+            });
+
+            const activeArrow = document.querySelector(`th .sort-arrow[onclick="sortTable('${criteria}')"]`);
+            if (sortDirection[criteria] === 'asc') {
+                activeArrow.classList.add('sorted-asc');
+            } else {
+                activeArrow.classList.add('sorted-desc');
+            }
+        }
+
+        // פונקציה להוספת שורות לטבלה
+        function loadTableData(data) {
+            const tableBody = document.getElementById('incomeTableBody');
+            tableBody.innerHTML = ''; // נקה את הטבלה לפני הוספת נתונים חדשים
+            data.forEach(income => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${income.date}</td>
+                    <td>${income.amount}</td>
+                    <td>${income.category ? income.category.name : 'לא זוהתה קטגוריה'}</td>
+                    <td>${income.description}</td>
+                    <td>
+                        <button class="btn btn-success" onclick="editIncome(${income.id})">עדכן</button>
+                        <button class="btn btn-danger" onclick="deleteIncome(${income.id})">מחק</button>
+                    </td>`;
+            });
+        }
 
         // פונקציה להוסיף נתונים של העיסקה לטופס על מנת לעדכן אותה
         async function editIncome(id) {
@@ -257,29 +287,28 @@
             const description = document.getElementById('incomeDescription').value;
             const paymentMethod = document.getElementById('incomePaymentMethod').value;
 
-            // אם amount לא מספר או ריק, הראה שגיאה
             if (isNaN(amount) || amount <= 0) {
                 alert('הסכום חייב להיות מספר חיובי');
                 return;
             }
 
             if (currentIncomeId) {
-                // במקרה של עדכון, שולחים את הנתונים ל-URL של העיסקה המתאימה
+                // במקרה של עדכון
                 try {
                     const response = await axios.put(`https://budget-management-system-1fqb.onrender.com/transaction/transactions/${currentIncomeId}/`, {
                         date: date,
                         amount: amount,
-                        category: category,  // שלח את ה-ID של הקטגוריה
+                        category: category,
                         description: description,
                         payment_method: paymentMethod
                     }, {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }
                     });
 
                     if (response.status === 200) {
-                        loadIncomes();  // טוען את הנתונים מחדש לאחר העדכון
+                        loadIncomes();
                         document.getElementById('incomeForm').reset();
                         $('#addIncomeModal').modal('hide');
                         currentIncomeId = null;  // לאתחל את ה-ID לאחר העדכון
@@ -298,7 +327,7 @@
                         payment_method: paymentMethod,
                     }, {
                         headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }
                     });
 
@@ -321,7 +350,7 @@
             try {
                 await axios.delete(`https://budget-management-system-1fqb.onrender.com/transaction/transactions/${id}/`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
                 loadIncomes(); // טוען מחדש את העיסקאות אחרי מחיקת העיסקה
@@ -335,7 +364,7 @@
             try {
                 const response = await axios.get('https://budget-management-system-1fqb.onrender.com/transaction/categories/?type=income', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // שליחת הטוקן בהגדרת כותרת
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     }
                 });
                 const categories = response.data;
@@ -351,7 +380,6 @@
                 console.error('Error loading categories:', error);
             }
         }
-
 
         // טוען את ההכנסות והקטגוריות
         loadIncomes();
